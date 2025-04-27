@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>rust on ud01</title>
+    <link>https://cyanide4dinner.github.io/tags/rust/</link>
+    <description>Recent content in rust on ud01</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Utkarsh Dwivedi</copyright>
+    <lastBuildDate>Tue, 21 Jun 2022 21:27:52 +0530</lastBuildDate><atom:link href="https://cyanide4dinner.github.io/tags/rust/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Devlog 01: Rust development (Ravana)</title>
+      <link>https://cyanide4dinner.github.io/posts/devlog-01/</link>
+      <pubDate>Tue, 21 Jun 2022 21:27:52 +0530</pubDate>
+      
+      <guid>https://cyanide4dinner.github.io/posts/devlog-01/</guid>
+      <description>Deserializing responses Continuing development of my Rust-based Reddit API wrapper, serde_json effortlessly deserialized response string to map-based tree structure which I use to fill up my custom Listing &amp;amp; Post structures.
+Error types Also, refactoring made me rethink approach to errors. Firstly, if using enums (which I was) no value was added by declaring multiple error enums, if anything having multiple enums made returning errors a hassle as I had to conert between the error types.</description>
+      <content>&lt;h2 id=&#34;deserializing-responses&#34;&gt;Deserializing responses&lt;/h2&gt;
+&lt;p&gt;Continuing development of my &lt;a href=&#34;https://github.com/Cyanide4Dinner/ravana_reddit_api&#34;&gt;Rust-based Reddit API wrapper&lt;/a&gt;,
+&lt;a href=&#34;https://docs.serde.rs/serde_json/&#34;&gt;&lt;code&gt;serde_json&lt;/code&gt;&lt;/a&gt; effortlessly deserialized response string to map-based tree structure which I use to fill up my custom &lt;code&gt;Listing&lt;/code&gt; &amp;amp; &lt;code&gt;Post&lt;/code&gt; structures.&lt;/p&gt;
+&lt;h2 id=&#34;error-types&#34;&gt;Error types&lt;/h2&gt;
+&lt;p&gt;Also, refactoring made me rethink approach to errors. Firstly, if using enums (which I was) no value was added by declaring multiple error enums, if anything having multiple enums made returning errors a hassle as I had to conert between the error types. There might be some benefit on categorizing errors into groups so that the user can have more information and flexibility on handling the errors, especially for a library. However, enum variants seemed enough for one level of grouping. I&amp;rsquo;m still not able to reason for a second level of grouping by having different enum types too for errors. Hence, I&amp;rsquo;ve finalised on keeping a single enum as error type for the entire library.&lt;/p&gt;
+&lt;p&gt;For code quality and maintainability, the variants should not be abused which raises the question of when should we seperate out a error as a seperate enum variant?&lt;/p&gt;
+&lt;p&gt;One way is to create a variant for all those errors concerned with one functionality. Such as a type for errors based on request processing or connection and another for errors that arose due to invalid response or failure during serializing and parsing.&lt;/p&gt;
+&lt;p&gt;Another is to create different enum variants for different errors that could be &lt;em&gt;handled&lt;/em&gt; differently. For instance, a developer might want on timing out on a request, that an alert pops requesting user to check their internet connection and grouping it with other errors such as those arising for server errors seems more appropriate.&lt;/p&gt;
+&lt;h2 id=&#34;iterating-over-errors&#34;&gt;Iterating over errors&lt;/h2&gt;
+&lt;p&gt;A neat trick I came across while indulging in a problem I was facing tells us how to convert a &lt;code&gt;Vec&amp;lt;Result&amp;lt;T, E&amp;gt;&lt;/code&gt; to &lt;code&gt;Result&amp;lt;Vec&amp;lt;T&amp;gt;, E&amp;gt;&lt;/code&gt;. Credits to &lt;a href=&#34;https://stackoverflow.com/a/26370894/9897643&#34;&gt;this answer&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This comes quite handy when using &lt;code&gt;map&lt;/code&gt; and the closure could throw errors. If we want the pure vector and throw error if &lt;code&gt;map&lt;/code&gt; throws error for any item, simply collect over &lt;code&gt;Result&lt;/code&gt; and &lt;code&gt;from_iter&lt;/code&gt; will do the rest for us.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-rust&#34; data-lang=&#34;rust&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;let&lt;/span&gt; posts: Vec&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;Post&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Result::&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;Vec&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;Post&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;, Error&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;::from_iter::&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;Vec&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;Result&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;Post, Error&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		values
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		.into_iter()
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		.map(&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt;value&lt;span style=&#34;color:#f92672&#34;&gt;|&lt;/span&gt; -&amp;gt; Result&lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt;Post, Error&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; { 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;			value.convert_value_to_post() &lt;span style=&#34;color:#75715e&#34;&gt;//Could throw error
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;		})
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		.collect())&lt;span style=&#34;color:#f92672&#34;&gt;?&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</content>
+    </item>
+    
+  </channel>
+</rss>
